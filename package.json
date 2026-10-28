@@ -17,12 +17,12 @@
     "isbot": "^5.1.36",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router": "7.15.1"
+    "react-router": "^7.18.5"
   },
   "devDependencies": {
-    "@react-router/dev": "7.15.1",
+    "@react-router/dev": "7.18.5",
     "@shopify/cli": "^5.0.0",
-    "@shopify/mini-oxygen": "4.2.3",
+    "@shopify/mini-oxygen": "^4.2.3",
     "@shopify/oxygen-workers-types": "^4.1.6",
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^22",
@@ -36,5 +36,13 @@
   },
   "engines": {
     "node": "^22.12 || ^24"
+  },
+  "overrides": {
+    "ws": "8.22.0",
+    "cookie": "0.7.2",
+    "body-parser": "1.20.9",
+    "qs": "6.16.2",
+    "@fastify/busboy": "3.2.4",
+    "undici": "7.30.1"
   }
 }
