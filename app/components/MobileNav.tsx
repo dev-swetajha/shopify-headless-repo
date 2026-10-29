@@ -1,8 +1,9 @@
 import { Link } from "react-router";
 
 import { closeMobileNavDrawer, MOBILE_NAV_DRAWER_ID, openDialogFallback } from "~/lib/cart-drawer";
+import type { NavItem } from "~/lib/navigation";
 
-export function MobileNav() {
+export function MobileNav({ navItems }: { navItems: NavItem[] }) {
   return (
     <dialog
       id={MOBILE_NAV_DRAWER_ID}
@@ -34,15 +35,27 @@ export function MobileNav() {
         <div className="flex-1 overflow-y-auto p-4">
           <nav aria-label="Mobile navigation">
             <ul role="list" className="flex flex-col">
-              <li>
-                <Link
-                  to="/collections"
-                  className="min-h-touch-target text-on-surface flex items-center rounded-sm text-xl font-normal no-underline hover:opacity-70 motion-safe:transition-opacity"
-                  onClick={() => closeMobileNavDrawer()}
-                >
-                  Collections
-                </Link>
-              </li>
+              {navItems.map((item) => (
+                <li key={item.id}>
+                  {item.external ? (
+                    <a
+                      href={item.to}
+                      className="min-h-touch-target text-on-surface flex items-center rounded-sm text-xl font-normal no-underline hover:opacity-70 motion-safe:transition-opacity"
+                      onClick={() => closeMobileNavDrawer()}
+                    >
+                      {item.title}
+                    </a>
+                  ) : (
+                    <Link
+                      to={item.to}
+                      className="min-h-touch-target text-on-surface flex items-center rounded-sm text-xl font-normal no-underline hover:opacity-70 motion-safe:transition-opacity"
+                      onClick={() => closeMobileNavDrawer()}
+                    >
+                      {item.title}
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </nav>
         </div>

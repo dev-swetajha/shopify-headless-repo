@@ -26,7 +26,14 @@ import { predictiveSearchHandlers } from "~/lib/predictive-search-handlers";
 import { loadRootLayout } from "~/lib/root-layout";
 import { routeTemplates } from "~/lib/route-templates";
 import { createEphemeralSessionManager } from "~/lib/session";
-import { analyticsConsent, resolveShopIdentity, storefrontConfig } from "~/lib/shop";
+import {
+  analyticsConsent,
+  getMockShopDomain,
+  getStoreDomain,
+  resolveShopIdentity,
+  shouldUseMockShop,
+  storefrontConfig,
+} from "~/lib/shop";
 import {
   createRequestStorefrontClient,
   storefrontClientContext,
@@ -96,12 +103,16 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   const storefrontClient = context.get(storefrontClientContext);
   const [cartResult, layout] = await Promise.all([
     cartHandlers.get({ storefrontClient, request }),
-    loadRootLayout(storefrontClient),
+    loadRootLayout(
+      storefrontClient,
+      shouldUseMockShop(env) ? getMockShopDomain(env) : getStoreDomain(env),
+    ),
   ]);
 
   return {
     cartData: cartResult.data,
     shopInfo: layout.shopInfo,
+    navItems: layout.navItems,
     shopIdentity: resolveShopIdentity(env, layout.shopId),
     currency: layout.currency,
   };
@@ -152,7 +163,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
       <PageViewedTracker />
       <CartAnalyticsTracker />
       <AnnouncementBar />
-      <Header shopInfo={loaderData.shopInfo} />
+      <Header shopInfo={loaderData.shopInfo} navItems={loaderData.navItems} />
       <Outlet />
       <Footer shopInfo={loaderData.shopInfo} />
       <CartDrawer />

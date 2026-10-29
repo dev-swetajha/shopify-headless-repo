@@ -164,9 +164,8 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   return (
     <main className="flex-1" id="main-content" tabIndex={-1}>
-      <HomeHero hero={hero} />
-      <NewArrivals products={loaderData.featuredProducts} />
-      <ShopByCategory collections={loaderData.featuredCollections} />
+      <HomeHero hero={{ ...hero, image: { url: "/images/hero.png", altText: "…" } }}  />
+      
     </main>
   );
 }

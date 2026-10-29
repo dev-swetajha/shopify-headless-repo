@@ -3,6 +3,7 @@ import { Link } from "react-router";
 
 import { useCart } from "~/lib/cart";
 import { CART_DRAWER_ID, SEARCH_DRAWER_ID, openDialogFromLinkClick } from "~/lib/cart-drawer";
+import type { NavItem } from "~/lib/navigation";
 import type { StorefrontShop } from "~/lib/storefront-shop";
 
 import { MobileNav, MobileNavTrigger } from "./MobileNav";
@@ -19,7 +20,7 @@ function displayCount(count: number) {
   return count > 99 ? "99+" : String(count);
 }
 
-export function Header({ shopInfo }: { shopInfo: StorefrontShop }) {
+export function Header({ shopInfo, navItems }: { shopInfo: StorefrontShop; navItems: NavItem[] }) {
   const totalQuantity = useCart((state) => state.data.totalQuantity);
   const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null);
   const logo = shopInfo.logo;
@@ -64,12 +65,25 @@ export function Header({ shopInfo }: { shopInfo: StorefrontShop }) {
           className="mx-8 hidden min-w-0 flex-1 items-center gap-8 overflow-x-auto md:flex"
           data-desktop-nav
         >
-          <Link
-            to="/collections"
-            className="text-on-surface focus-visible:outline-accent shrink-0 rounded-sm text-sm font-normal whitespace-nowrap no-underline hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-opacity"
-          >
-            Collections
-          </Link>
+          {navItems.map((item) =>
+            item.external ? (
+              <a
+                key={item.id}
+                href={item.to}
+                className="text-on-surface focus-visible:outline-accent shrink-0 rounded-sm text-sm font-normal whitespace-nowrap no-underline hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-opacity"
+              >
+                {item.title}
+              </a>
+            ) : (
+              <Link
+                key={item.id}
+                to={item.to}
+                className="text-on-surface focus-visible:outline-accent shrink-0 rounded-sm text-sm font-normal whitespace-nowrap no-underline hover:opacity-70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-safe:transition-opacity"
+              >
+                {item.title}
+              </Link>
+            ),
+          )}
         </nav>
 
         <div className="flex shrink-0 items-center gap-0">
@@ -117,7 +131,7 @@ export function Header({ shopInfo }: { shopInfo: StorefrontShop }) {
           </span>
         </div>
       </div>
-      <MobileNav />
+      <MobileNav navItems={navItems} />
     </header>
   );
 }

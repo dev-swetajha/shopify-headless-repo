@@ -1,5 +1,6 @@
 import { gql, type StorefrontApi, type StorefrontClient } from "@shopify/hydrogen";
 
+import { normalizeMenuItems, type NavItem } from "~/lib/navigation";
 import { normalizeStorefrontShop, type StorefrontShop } from "~/lib/storefront-shop";
 
 export const ROOT_LAYOUT_QUERY = gql(`
@@ -31,6 +32,13 @@ export const ROOT_LAYOUT_QUERY = gql(`
         }
       }
     }
+    menu(handle: "main-menu") {
+      items {
+        id
+        title
+        url
+      }
+    }
   }
 `);
 
@@ -39,6 +47,7 @@ export type RootLayoutQueryResult = StorefrontApi.ResultOf<typeof ROOT_LAYOUT_QU
 type RootLayoutLoaderData = {
   shopId: string;
   shopInfo: StorefrontShop;
+  navItems: NavItem[];
   // Browse events carry no price, so shopify.js reads their currency from
   // window.Shopify.currency.active. The cart tracker only sets that once a cart exists,
   // so the bootstrap needs it up front.
@@ -47,6 +56,7 @@ type RootLayoutLoaderData = {
 
 export async function loadRootLayout(
   storefrontClient: Pick<StorefrontClient, "graphql">,
+  storeDomain: string,
 ): Promise<RootLayoutLoaderData> {
   const layoutResult = await storefrontClient.graphql(ROOT_LAYOUT_QUERY);
 
@@ -59,10 +69,11 @@ export async function loadRootLayout(
   // Upstream error details are logged above, not exposed through the boundary.
   if (!layoutResult.data) throw new Error("Root layout data is unavailable.");
 
-  const { shop, localization } = layoutResult.data;
+  const { shop, localization, menu } = layoutResult.data;
   return {
     shopId: shop.id,
     shopInfo: normalizeStorefrontShop(shop),
+    navItems: normalizeMenuItems(menu?.items, storeDomain),
     currency: localization.country.currency.isoCode,
   };
 }
