@@ -165,7 +165,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
       <AnnouncementBar />
       <Header shopInfo={loaderData.shopInfo} navItems={loaderData.navItems} />
       <Outlet />
-      <Footer shopInfo={loaderData.shopInfo} />
+      <Footer shopInfo={loaderData.shopInfo} navItems={loaderData.navItems} />
       <CartDrawer />
       <SearchDrawer />
     </CartProvider>

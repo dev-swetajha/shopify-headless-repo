@@ -8,7 +8,7 @@ import {
 } from "~/components/CollectionCard";
 import { HomeHero } from "~/components/HomeHero";
 import { ProductCard, PRODUCT_CARD_FRAGMENT, type ProductCardData } from "~/components/ProductCard";
-import { selectHomeHero } from "~/lib/home-hero";
+import { selectHomeHero, selectShowcaseCollections } from "~/lib/home-hero";
 import { storefrontClientContext } from "~/lib/storefront";
 import {
   FALLBACK_SHOP_NAME,
@@ -27,9 +27,28 @@ const HOME_QUERY = gql(
           ...ProductCard
         }
       }
-      collections(first: 3) {
+      collections(first: 5) {
         nodes {
           ...CollectionCard
+        }
+      }
+      showcaseCollections: collections(first: 10) {
+        nodes {
+          title
+          handle
+          description
+          image {
+            url
+            altText
+          }
+          products(first: 1) {
+            nodes {
+              featuredImage {
+                url
+                altText
+              }
+            }
+          }
         }
       }
       heroCollections: collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
@@ -78,11 +97,14 @@ export async function loader({ context }: Route.LoaderArgs) {
   // The hero features the most recently updated collection, independent of the
   // category list above.
   const heroCollections = data?.heroCollections.nodes ?? [];
+  // The hero's showcase grid lists the first few store collections that have an image.
+  const showcaseCollections = selectShowcaseCollections(data?.showcaseCollections.nodes ?? []);
 
   return {
     featuredProducts,
     featuredCollections,
     heroCollections,
+    showcaseCollections,
   };
 }
 
@@ -164,8 +186,10 @@ export default function Home({ loaderData }: Route.ComponentProps) {
 
   return (
     <main className="flex-1" id="main-content" tabIndex={-1}>
-      <HomeHero hero={{ ...hero, image: { url: "/images/hero.png", altText: "…" } }}  />
-      
+      <HomeHero
+        hero={{ ...hero, image: { url: "/images/hero.png", altText: "…" } }}
+        collections={loaderData.showcaseCollections}
+      />
     </main>
   );
 }

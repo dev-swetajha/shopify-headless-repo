@@ -3,44 +3,18 @@ import { useState } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import { Link } from "react-router";
 
-import type { HomeHeroData } from "~/lib/home-hero";
-import "./home-hero.css";
+import type { HomeHeroData, ShowcaseCollection } from "~/lib/home-hero";
 
-const collections = [
-  {
-    title: "Fragrances",
-    description: "Scents that tell your story",
-    image:
-      "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=85",
-    to: "/collections/fragrances",
-  },
-  {
-    title: "Skincare",
-    description: "Pure care for natural glow",
-    image:
-      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=800&q=85",
-    to: "/collections/skincare",
-  },
-  {
-    title: "Home",
-    description: "Elevate your living space",
-    image:
-      "https://images.unsplash.com/photo-1602874801007-bd458bb1b8b6?auto=format&fit=crop&w=800&q=85",
-    to: "/collections/home",
-  },
-  {
-    title: "Lifestyle",
-    description: "For a mindful tomorrow",
-    image:
-      "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=800&q=85",
-    to: "/collections/lifestyle",
-  },
-];
-
-export function HomeHero({ hero }: { hero: HomeHeroData }) {
+export function HomeHero({
+  hero,
+  collections,
+}: {
+  hero: HomeHeroData;
+  collections: readonly ShowcaseCollection[];
+}) {
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);  
 
   const image =
     hero.image && hero.image.url !== failedImageUrl
@@ -64,7 +38,7 @@ export function HomeHero({ hero }: { hero: HomeHeroData }) {
   } as CSSProperties;
 
   return (
-    <main className="aurora-page">
+    <section className="aurora-page">
       {/* HERO */}
       <section
         className="luxury-hero"
@@ -86,42 +60,6 @@ export function HomeHero({ hero }: { hero: HomeHeroData }) {
 
         <div className="luxury-hero__gradient" aria-hidden="true" />
         <div className="luxury-hero__grain" aria-hidden="true" />
-
-        <header className="aurora-header">
-          <Link to="/" className="aurora-logo">
-            A U R O R A
-          </Link>
-
-          <button
-            type="button"
-            className="aurora-menu-toggle"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            {menuOpen ? "✕" : "☰"}
-          </button>
-
-          <nav
-            className={`aurora-nav ${menuOpen ? "is-open" : ""}`}
-            aria-label="Main navigation"
-          >
-            <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-            <Link to="/collections/all" onClick={() => setMenuOpen(false)}>Shop</Link>
-            <a href="#featured-collections" onClick={() => setMenuOpen(false)}>
-              Collections
-            </a>
-            <a href="#our-story" onClick={() => setMenuOpen(false)}>
-              About
-            </a>
-          </nav>
-
-          <div className="aurora-header__actions">
-            <Link to="/search" aria-label="Search">⌕</Link>
-            <Link to="/account" aria-label="Account">♙</Link>
-            <Link to="/cart" aria-label="Cart">♧</Link>
-          </div>
-        </header>
 
         <div className="luxury-hero__scene" aria-hidden="true">
           <div className="luxury-hero__halo" />
@@ -186,48 +124,50 @@ export function HomeHero({ hero }: { hero: HomeHeroData }) {
       </section>
 
       {/* FEATURED COLLECTIONS */}
-      <section
-        id="featured-collections"
-        className="aurora-collections"
-        aria-labelledby="collections-heading"
-      >
-        <div className="aurora-section-heading">
-          <div>
-            <span className="aurora-eyebrow aurora-eyebrow--dark">
-              FEATURED COLLECTIONS
-            </span>
-            <h2 id="collections-heading">Explore Our World</h2>
+      {collections.length > 0 && (
+        <section
+          id="featured-collections"
+          className="aurora-collections"
+          aria-labelledby="collections-heading"
+        >
+          <div className="aurora-section-heading">
+            <div>
+              <span className="aurora-eyebrow aurora-eyebrow--dark">
+                FEATURED COLLECTIONS
+              </span>
+              <h2 id="collections-heading">Explore Our World</h2>
+            </div>
+
+            <Link to="/collections/all" className="aurora-view-all">
+              View All <span aria-hidden="true">→</span>
+            </Link>
           </div>
 
-          <Link to="/collections/all" className="aurora-view-all">
-            View All <span aria-hidden="true">→</span>
-          </Link>
-        </div>
+          <div className="aurora-collection-grid">
+            {collections.map((collection, index) => (
+              <Link
+                key={collection.handle}
+                to={`/collections/${collection.handle}`}
+                className="aurora-collection-card"
+                style={{ "--card-index": index } as CSSProperties}
+              >
+                <img src={collection.image.url} alt="" loading="lazy" />
+                <div className="aurora-collection-card__shade" />
 
-        <div className="aurora-collection-grid">
-          {collections.map((collection, index) => (
-            <Link
-              key={collection.title}
-              to={collection.to}
-              className="aurora-collection-card"
-              style={{ "--card-index": index } as CSSProperties}
-            >
-              <img src={collection.image} alt="" loading="lazy" />
-              <div className="aurora-collection-card__shade" />
-
-              <div className="aurora-collection-card__content">
-                <h3>{collection.title}</h3>
-                <div>
-                  <span>{collection.description}</span>
-                  <span className="aurora-card-arrow" aria-hidden="true">
-                    →
-                  </span>
+                <div className="aurora-collection-card__content">
+                  <h3>{collection.title}</h3>
+                  <div>
+                    {collection.description && <span>{collection.description}</span>}
+                    <span className="aurora-card-arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* OUR STORY */}
       <section id="our-story" className="aurora-story">
@@ -250,6 +190,6 @@ export function HomeHero({ hero }: { hero: HomeHeroData }) {
           <div className="aurora-story__plant">✳</div>
         </div>
       </section>
-    </main>
+    </section>
   );
 }
