@@ -7,7 +7,13 @@ import { defineConfig } from "vite";
 const oxygenPlugins = oxygen();
 const oxygenPlugin = oxygenPlugins.find((plugin) => plugin.name === "oxygen:main");
 const enabled = process.env.npm_lifecycle_event === "dev:https";
-const httpsOptions = { enabled };
+// localHttps serves on 5173 unless a port is given; LOCAL_HTTPS_PORT picks another one
+// (Vite's --port flag does not override it).
+const localHttpsPort = Number(process.env.LOCAL_HTTPS_PORT);
+const httpsOptions = {
+  enabled,
+  ...(Number.isInteger(localHttpsPort) && localHttpsPort > 0 ? { port: localHttpsPort } : {}),
+};
 
 if (!oxygenPlugin?.api) {
   throw new Error("MiniOxygen plugin API is unavailable.");

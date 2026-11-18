@@ -38,7 +38,7 @@ export function HomeHero({
   } as CSSProperties;
 
   return (
-    <section className="aurora-page">
+    <div className="aurora-page">
       {/* HERO */}
       <section
         className="luxury-hero"
@@ -190,6 +190,6 @@ export function HomeHero({
           <div className="aurora-story__plant">✳</div>
         </div>
       </section>
-    </section>
+    </div>
   );
 }

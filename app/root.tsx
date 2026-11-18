@@ -8,6 +8,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
   useNavigate,
   useRouteLoaderData,
 } from "react-router";
@@ -113,6 +114,7 @@ export async function loader({ context, request }: Route.LoaderArgs) {
     cartData: cartResult.data,
     shopInfo: layout.shopInfo,
     navItems: layout.navItems,
+    footerMenu: layout.footerMenu,
     shopIdentity: resolveShopIdentity(env, layout.shopId),
     currency: layout.currency,
   };
@@ -120,6 +122,9 @@ export async function loader({ context, request }: Route.LoaderArgs) {
 
 export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // Marks the home page (index route) so styles can target it via the body class.
+  const pageClass = pathname === "/" ? "home-page" : "other-page";
   // Absent when the root loader failed (error page only).
   const rootData = useRouteLoaderData<typeof loader>("root");
 
@@ -142,7 +147,9 @@ export function Layout({ children }: { children: ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body className="bg-surface text-on-surface font-body flex min-h-svh flex-col antialiased">
+      <body
+        className={`bg-surface text-on-surface font-body flex min-h-svh flex-col antialiased ${pageClass}`}
+      >
         <a
           href="#main-content"
           className="focus-visible:bg-interactive focus-visible:text-interactive-text sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:start-4 focus-visible:top-4 focus-visible:z-50 focus-visible:rounded focus-visible:px-4 focus-visible:py-2"
@@ -165,7 +172,7 @@ export default function App({ loaderData }: Route.ComponentProps) {
       <AnnouncementBar />
       <Header shopInfo={loaderData.shopInfo} navItems={loaderData.navItems} />
       <Outlet />
-      <Footer shopInfo={loaderData.shopInfo} navItems={loaderData.navItems} />
+      <Footer shopInfo={loaderData.shopInfo} footerMenu={loaderData.footerMenu} />
       <CartDrawer />
       <SearchDrawer />
     </CartProvider>

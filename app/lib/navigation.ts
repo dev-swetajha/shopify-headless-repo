@@ -1,6 +1,6 @@
-// Header navigation from the store's menu, read once per request by the root loader.
-// Falls back to the collections index when the store has no menu, so the header
-// always has a way into the catalog.
+// Header and footer navigation from the store's menus, read once per request by the
+// root loader. The header falls back to the collections index when the store has no
+// main menu, so it always has a way into the catalog.
 
 import { isMockShopDomain } from "~/lib/shop";
 
@@ -12,7 +12,25 @@ export type NavItem = {
   external: boolean;
 };
 
-type MenuItem = { id: string; title: string; url: string | null };
+/** A footer column: a top-level footer menu item with its child links. */
+export type FooterColumn = {
+  id: string;
+  title: string;
+  links: NavItem[];
+};
+
+export type FooterMenu = {
+  columns: FooterColumn[];
+  /** Top-level footer items without children, shown as a row of legal-style links. */
+  legalLinks: NavItem[];
+};
+
+type MenuItem = {
+  id: string;
+  title: string;
+  url: string | null;
+  items?: readonly MenuItem[] | null;
+};
 
 const FALLBACK_NAV_ITEMS: readonly NavItem[] = [
   { id: "collections", title: "Collections", to: "/collections", external: false },
@@ -27,29 +45,64 @@ function isStoreHost(hostname: string, storeDomain: string): boolean {
   );
 }
 
-/** Maps menu items to header links; items with no title or an unparseable URL are dropped. */
+/** Maps one menu item to a link; returns `null` when it has no title or an unparseable URL. */
+function toNavItem(item: MenuItem, storeDomain: string): NavItem | null {
+  const title = item.title.trim();
+  if (!title || !item.url) return null;
+
+  let url: URL;
+  try {
+    url = new URL(item.url, `https://${storeDomain}`);
+  } catch {
+    return null;
+  }
+
+  if (isStoreHost(url.hostname, storeDomain)) {
+    return { id: item.id, title, to: `${url.pathname}${url.search}${url.hash}`, external: false };
+  }
+  return { id: item.id, title, to: url.href, external: true };
+}
+
+function toNavItems(items: readonly MenuItem[] | null | undefined, storeDomain: string) {
+  return (items ?? []).flatMap((item) => {
+    const navItem = toNavItem(item, storeDomain);
+    return navItem ? [navItem] : [];
+  });
+}
+
+/** Maps main-menu items to header links; falls back to the collections index when empty. */
 export function normalizeMenuItems(
   items: readonly MenuItem[] | null | undefined,
   storeDomain: string,
 ): NavItem[] {
-  const navItems = (items ?? []).flatMap((item): NavItem[] => {
-    const title = item.title.trim();
-    if (!title || !item.url) return [];
-
-    let url: URL;
-    try {
-      url = new URL(item.url, `https://${storeDomain}`);
-    } catch {
-      return [];
-    }
-
-    if (isStoreHost(url.hostname, storeDomain)) {
-      return [
-        { id: item.id, title, to: `${url.pathname}${url.search}${url.hash}`, external: false },
-      ];
-    }
-    return [{ id: item.id, title, to: url.href, external: true }];
-  });
-
+  const navItems = toNavItems(items, storeDomain);
   return navItems.length > 0 ? navItems : [...FALLBACK_NAV_ITEMS];
+}
+
+/**
+ * Maps footer-menu items to footer columns and legal links. A top-level item with
+ * valid children becomes a column titled by the item; a top-level item without any
+ * is a single link and goes to the legal row. Invalid entries are dropped, and the
+ * result is empty (no fallback) when the store has no footer menu.
+ */
+export function normalizeFooterMenu(
+  items: readonly MenuItem[] | null | undefined,
+  storeDomain: string,
+): FooterMenu {
+  const columns: FooterColumn[] = [];
+  const legalLinks: NavItem[] = [];
+
+  for (const item of items ?? []) {
+    const links = toNavItems(item.items, storeDomain);
+    if (links.length > 0) {
+      const title = item.title.trim();
+      if (title) columns.push({ id: item.id, title, links });
+      continue;
+    }
+
+    const navItem = toNavItem(item, storeDomain);
+    if (navItem) legalLinks.push(navItem);
+  }
+
+  return { columns, legalLinks };
 }

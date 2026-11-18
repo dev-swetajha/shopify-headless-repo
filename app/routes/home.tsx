@@ -8,7 +8,10 @@ import {
 } from "~/components/CollectionCard";
 import { HomeHero } from "~/components/HomeHero";
 import { ProductCard, PRODUCT_CARD_FRAGMENT, type ProductCardData } from "~/components/ProductCard";
+import { ThemeSettingsSection } from "~/components/ThemeSettingsSection";
 import { selectHomeHero, selectShowcaseCollections } from "~/lib/home-hero";
+import { envContext } from "~/lib/env";
+import { getThemeSettings } from "~/lib/theme-settings";
 import { storefrontClientContext } from "~/lib/storefront";
 import {
   FALLBACK_SHOP_NAME,
@@ -89,6 +92,7 @@ export function meta({ matches }: Route.MetaArgs) {
 export async function loader({ context }: Route.LoaderArgs) {
   const storefrontClient = context.get(storefrontClientContext);
   const { data } = await storefrontClient.graphql(HOME_QUERY);
+  const themeSettings = await getThemeSettings(context.get(envContext));
 
   // New arrivals: the most recently created products (by creation date, not
   // publication date), newest first, in the order the Storefront API returns.
@@ -105,6 +109,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     featuredCollections,
     heroCollections,
     showcaseCollections,
+    themeSettings,
   };
 }
 
@@ -190,6 +195,7 @@ export default function Home({ loaderData }: Route.ComponentProps) {
         hero={{ ...hero, image: { url: "/images/hero.png", altText: "…" } }}
         collections={loaderData.showcaseCollections}
       />
+      <ThemeSettingsSection result={loaderData.themeSettings} />
     </main>
   );
 }

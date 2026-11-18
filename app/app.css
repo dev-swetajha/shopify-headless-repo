@@ -378,7 +378,6 @@ body:has(.drawer-left[open]) {
 }
 
 .aurora-header {
-  position: absolute;
   z-index: 10;
   inset: 0 0 auto;
   min-height: 76px;
@@ -392,6 +391,10 @@ body:has(.drawer-left[open]) {
     color: white;
     font-weight: 500;
   }
+}
+
+.home-page .aurora-header {
+  position: absolute;
 }
 
 .aurora-logo {
